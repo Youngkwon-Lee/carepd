@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+venv39/
+ENV/
+.venv/
+
+# Data files (large)
+*.pkl
+*.pth
+*.pt
+*.h5
+*.hdf5
+*.npy
+*.npz
+
+# Assets (downloaded separately)
+CARE-PD/assets/datasets/
+CARE-PD/assets/body_models/
+CARE-PD/pretrained/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+wandb/
+
+# Output
+CARE-PD/out/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Cache
+.cache/
+*.cache

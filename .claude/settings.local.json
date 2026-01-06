@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(where:*)",
+      "Bash(py -0:*)",
+      "Bash(conda --version:*)",
+      "Bash(winget search:*)",
+      "Bash(winget install:*)",
+      "Bash(./venv39/Scripts/pip.exe install:*)",
+      "Bash(./venv39/Scripts/python.exe -m pip:*)",
+      "Bash(winget uninstall:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
