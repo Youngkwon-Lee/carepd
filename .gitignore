@@ -39,6 +39,7 @@ wandb/
 
 # Output
 CARE-PD/out/
+CARE-PD/experiment_outs/
 
 # Jupyter
 .ipynb_checkpoints/
