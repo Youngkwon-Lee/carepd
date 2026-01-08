@@ -72,6 +72,20 @@
   - 모델 저장: `./experiment_outs/Hypertune/POTR_BMCLab/0/models/train_BMCLab_2fold/`
   - 백업 파일: `potr_2fold_results_20260108.tar.gz` (24MB)
 
+- [x] **POTR + BMCLab 23-fold LOSO 학습 완료** (2026-01-08) 🎉
+  - GPU: Tesla V100 (GPU 1)
+  - 데이터셋: BMCLab (3,895 샘플, 23명 환자)
+  - **Overall Accuracy: 43%**
+  - **Weighted F1 Score: 0.42** (+5% vs 2-fold)
+  - **Macro F1 Score: 0.39** (+18% vs 2-fold)
+  - 클래스별 성능:
+    - Class 0 (정상): Precision 0.53, Recall 0.59, F1 0.56
+    - Class 1 (경증): Precision 0.41, Recall 0.32, F1 0.36
+    - Class 2 (중증): Precision 0.24, Recall 0.27, F1 0.25 ✅ (+733% vs 2-fold!)
+  - 실행 시간: 평균 ~26초/fold, 총 ~10분
+  - 모델 저장: `./experiment_outs/Hypertune/POTR_BMCLab/0/models/train_BMCLab_23fold/`
+  - **핵심 개선**: Class 2 (중증) 탐지율 3% → 27% (9배 향상)
+
 ---
 
 ## 🖥️ HPC 환경 상세
@@ -274,10 +288,11 @@ tar -czf potr_2fold_results_20260108.tar.gz experiment_outs/Hypertune/POTR_BMCLa
 |-------|---------|--------|---------|--------|-----|--------|
 | POTR | BMCLab | 3.3M | **0.4036** | 3 | GPU 1 | ✅ 완료 |
 
-### 2-Fold LOSO 학습 결과
-| Model | Dataset | Folds | Accuracy | Weighted F1 | Class 0 F1 | Class 1 F1 | Class 2 F1 | Status |
-|-------|---------|-------|----------|-------------|------------|------------|------------|--------|
-| POTR | BMCLab (23명) | 2 | 43% | **0.40** | 0.61 | 0.35 | 0.03 ⚠️ | ✅ 완료 |
+### LOSO 학습 결과
+| Model | Dataset | Folds | Accuracy | Weighted F1 | Macro F1 | Class 0 F1 | Class 1 F1 | Class 2 F1 | Status |
+|-------|---------|-------|----------|-------------|----------|------------|------------|------------|--------|
+| POTR | BMCLab (23명) | 2 | 43% | 0.40 | 0.33 | 0.61 | 0.35 | 0.03 ⚠️ | ✅ 완료 |
+| POTR | BMCLab (23명) | 23 | 43% | **0.42** | **0.39** | 0.56 | 0.36 | **0.25** ✅ | ✅ 완료 |
 
 ### 대기 중인 모델
 | Model | Dataset | Params | GPU | Status |
