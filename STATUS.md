@@ -32,10 +32,15 @@
 ### 3. 데이터 전처리
 - [x] **BMCLab**: SMPL → H36M 변환 완료
   - 총 3,895 시퀀스 생성
+  - **환자 수: 23명** (SUB01-SUB26, 일부 누락)
+  - 라벨 분포: Class 0 (1,705), Class 1 (1,380), Class 2 (810)
+  - 최대 LOSO CV: **23-fold** (환자 수 제한)
   - 저장 위치: `~/carepd/CARE-PD/assets/datasets/h36m/BMCLab/`
 - [ ] 3DGait: 전처리 스크립트 버그 (UnboundLocalError)
 - [ ] PD-GaM: 미실행
 - [ ] T-SDU-PD: 미실행
+
+**⚠️ 중요**: BMCLab만으로는 186-fold 불가. 전체 9개 코호트 통합 시 186명 환자.
 
 ### 4. 모델 학습
 - [x] 사전학습 모델 다운로드: `bash scripts/download_models.sh`
@@ -45,7 +50,7 @@
   - **Best F1 Score: 0.4036 (40.36%)**
   - Best Trial: 0
   - 최적 설정:
-    - epochs: 30
+    - epochs: 30 → 3 (avg_best_epoch)
     - batch_size: 256
     - optimizer: AdamW
     - lr_backbone: 0.0001
@@ -53,6 +58,19 @@
     - criterion: FocalLoss (alpha=1, gamma=2)
     - weight_decay: 0
   - 결과 저장: `./experiment_outs/Hypertune/POTR_BMCLab/0/study.pkl`
+
+- [x] **POTR + BMCLab 2-fold LOSO 학습 완료** (2026-01-08)
+  - GPU: Tesla V100 (GPU 1)
+  - 데이터셋: BMCLab (3,895 샘플, 23명 환자)
+  - **Overall Accuracy: 43%**
+  - **Weighted F1 Score: 0.40**
+  - 클래스별 성능:
+    - Class 0 (정상): Precision 0.54, Recall 0.70, F1 0.61
+    - Class 1 (경증): Precision 0.37, Recall 0.33, F1 0.35
+    - Class 2 (중증): Precision 0.05, Recall 0.03, F1 0.03 ⚠️
+  - 실행 시간: Fold1 (25초), Fold2 (36초)
+  - 모델 저장: `./experiment_outs/Hypertune/POTR_BMCLab/0/models/train_BMCLab_2fold/`
+  - 백업 파일: `potr_2fold_results_20260108.tar.gz` (24MB)
 
 ---
 
@@ -133,25 +151,33 @@ CARE-PD/
 
 ## 📝 다음 작업 계획
 
-### 우선순위 1: 나머지 경량 모델 학습 (GPU 1 사용)
-- [ ] **MotionCLIP** (8M params) + BMCLab
-- [ ] **PoseFormerV2** (8M params) + BMCLab
-- [ ] **MixSTE** (10M params) + BMCLab
-- [ ] **MoMask (RVQVAE)** (10M params) + BMCLab
+### 우선순위 1: POTR 23-Fold LOSO 학습 (GPU 1 사용)
+- [ ] **POTR + BMCLab 23-fold** - 전체 환자 LOSO CV
+  - 현재 2-fold에서 Class 2 (중증) 성능 매우 낮음 (F1: 0.03)
+  - 23-fold로 환자별 일반화 성능 확인 필요
+  - 예상 시간: ~10-15분
+  - 명령어: `CUDA_VISIBLE_DEVICES=1 nohup python run.py --backbone potr --config BMCLab.json --num_folds 23 --hypertune 0 --this_run_num 0 > train_potr_23fold.log 2>&1 &`
 
-### 우선순위 2: 추가 데이터셋 전처리
+### 우선순위 2: 나머지 경량 모델 학습 (GPU 1 사용)
+- [ ] **MotionCLIP** (8M params) + BMCLab 2-fold
+- [ ] **PoseFormerV2** (8M params) + BMCLab 2-fold
+- [ ] **MixSTE** (10M params) + BMCLab 2-fold
+- [ ] **MoMask (RVQVAE)** (10M params) + BMCLab 2-fold
+
+### 우선순위 3: 추가 데이터셋 전처리
 - [ ] 3DGait 전처리 버그 수정
 - [ ] PD-GaM 전처리
 - [ ] T-SDU-PD 전처리
+- [ ] 전체 코호트 통합 (186명 환자)
 
-### 우선순위 3: 중량 모델 학습 (GPU 0 사용 가능 시)
+### 우선순위 4: 중량 모델 학습 (GPU 0 사용 가능 시)
 - [ ] **MotionBERT** (25M params) - GPU 0 필요 (11GB+ 메모리)
 - [ ] **MotionAGFormer** (15M params)
 
-### 우선순위 4: 평가 및 분석
-- [ ] LOSO (Leave-One-Subject-Out) Cross-Validation
-- [ ] Cross-Dataset Evaluation
-- [ ] 모델별 성능 비교 분석
+### 우선순위 5: 성능 개선 실험
+- [ ] Class imbalance 해결: SMOTE, focal loss 튜닝
+- [ ] Epoch 수 증가 실험 (3 → 10, 30)
+- [ ] 앙상블 모델 실험
 
 ---
 
@@ -207,12 +233,22 @@ CARE-PD/
 ```bash
 # HPC에서 중요한 결과만 압축
 cd ~/carepd/CARE-PD
-tar -czf potr_bmclab_$(date +%Y%m%d).tar.gz experiment_outs/Hypertune/POTR_BMCLab/
+
+# 하이퍼튜닝 결과 백업 (7.4KB)
+tar -czf potr_bmclab_20260108.tar.gz experiment_outs/Hypertune/POTR_BMCLab/0/study.pkl
+
+# 모델 파일 백업 (24MB)
+tar -czf potr_2fold_results_20260108.tar.gz experiment_outs/Hypertune/POTR_BMCLab/0/models/
 
 # WinSCP로 로컬 다운로드
 # 저장 위치: D:\carepd\backups\
+```
 
-# 필요시 Google Drive 업로드
+### 현재 백업 파일 (HPC)
+```
+~/carepd/CARE-PD/
+├── potr_bmclab_20260108.tar.gz         (7.4KB - study.pkl)
+└── potr_2fold_results_20260108.tar.gz  (24MB - 모델 체크포인트)
 ```
 
 ### 왜 Git을 안 쓰나요?
@@ -233,15 +269,25 @@ tar -czf potr_bmclab_$(date +%Y%m%d).tar.gz experiment_outs/Hypertune/POTR_BMCLa
 
 ## 📊 학습 결과 요약
 
-| Model | Dataset | Params | F1 Score | Trials | GPU | Status |
-|-------|---------|--------|----------|--------|-----|--------|
+### 하이퍼파라미터 튜닝 결과
+| Model | Dataset | Params | Best F1 | Trials | GPU | Status |
+|-------|---------|--------|---------|--------|-----|--------|
 | POTR | BMCLab | 3.3M | **0.4036** | 3 | GPU 1 | ✅ 완료 |
-| MotionCLIP | BMCLab | 8M | - | - | - | ⏳ 대기 |
-| PoseFormerV2 | BMCLab | 8M | - | - | - | ⏳ 대기 |
-| MixSTE | BMCLab | 10M | - | - | - | ⏳ 대기 |
-| MoMask | BMCLab | 10M | - | - | - | ⏳ 대기 |
-| MotionAGFormer | BMCLab | 15M | - | - | - | ⏳ 대기 |
-| MotionBERT | BMCLab | 25M | - | - | GPU 0 필요 | ⏳ 대기 |
+
+### 2-Fold LOSO 학습 결과
+| Model | Dataset | Folds | Accuracy | Weighted F1 | Class 0 F1 | Class 1 F1 | Class 2 F1 | Status |
+|-------|---------|-------|----------|-------------|------------|------------|------------|--------|
+| POTR | BMCLab (23명) | 2 | 43% | **0.40** | 0.61 | 0.35 | 0.03 ⚠️ | ✅ 완료 |
+
+### 대기 중인 모델
+| Model | Dataset | Params | GPU | Status |
+|-------|---------|--------|-----|--------|
+| MotionCLIP | BMCLab | 8M | GPU 1 | ⏳ 대기 |
+| PoseFormerV2 | BMCLab | 8M | GPU 1 | ⏳ 대기 |
+| MixSTE | BMCLab | 10M | GPU 1 | ⏳ 대기 |
+| MoMask | BMCLab | 10M | GPU 1 | ⏳ 대기 |
+| MotionAGFormer | BMCLab | 15M | GPU 1 | ⏳ 대기 |
+| MotionBERT | BMCLab | 25M | GPU 0 필요 | ⏳ 대기 |
 
 ---
 
