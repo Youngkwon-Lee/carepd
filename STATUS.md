@@ -185,6 +185,43 @@ CARE-PD/
 
 ---
 
+## 💾 파일 관리 전략
+
+### Git으로 관리하는 것 (✅ GitHub)
+```bash
+✅ 소스코드 (.py, .sh, .json)
+✅ 설정 파일 (configs/*.json)
+✅ 문서 (.md)
+✅ HPC 스크립트 (hpc/*.sh)
+```
+
+### Git으로 관리하지 않는 것 (❌ .gitignore)
+```bash
+❌ 데이터셋 (.pkl, .npy) → HuggingFace / WinSCP
+❌ 모델 파일 (.pth, .pt) → HPC 백업 / Google Drive
+❌ 학습 결과 (experiment_outs/) → HPC 서버 보관
+❌ 로그 (.log) → HPC 서버 보관
+```
+
+### 학습 결과 백업 방법
+```bash
+# HPC에서 중요한 결과만 압축
+cd ~/carepd/CARE-PD
+tar -czf potr_bmclab_$(date +%Y%m%d).tar.gz experiment_outs/Hypertune/POTR_BMCLab/
+
+# WinSCP로 로컬 다운로드
+# 저장 위치: D:\carepd\backups\
+
+# 필요시 Google Drive 업로드
+```
+
+### 왜 Git을 안 쓰나요?
+- GitHub 파일 크기 제한: **100MB/파일**
+- 모델 파일: 수백 MB ~ 수 GB
+- Git은 코드 버전 관리용, 대용량 데이터는 부적합
+
+---
+
 ## 🔗 참고 링크
 
 - **Original Repo**: https://github.com/TaatiTeam/CARE-PD
