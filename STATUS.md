@@ -30,13 +30,26 @@
   - body_models/smpl/SMPL_NEUTRAL.pkl (39MB)
 
 ### 3. 데이터 전처리
-- [x] **BMCLab**: SMPL → H36M 변환 완료
+- [x] **BMCLab SMPL → H36M 변환 완료**
   - 총 3,895 시퀀스 생성
   - **환자 수: 23명** (SUB01-SUB26, 일부 누락)
   - 라벨 분포: Class 0 (1,705), Class 1 (1,380), Class 2 (810)
   - 최대 LOSO CV: **23-fold** (환자 수 제한)
+
+- [x] **BMCLab 다중 카메라 뷰 전처리 완료** (자동 생성됨)
+  - ✅ `h36m_3d_world_floorXZZplus_30f_or_longer.npz` (83MB)
+    - POTR, MoMask, MotionCLIP용
+  - ✅ `h36m_3d_world2cam_backright_floorXZZplus_30f_or_longer.npz` (165MB)
+    - MotionBERT, PoseFormerV2, MixSTE, MotionAGFormer용 (backright 뷰)
+  - ✅ `h36m_3d_world2cam_sideright_floorXZZplus_30f_or_longer.npz` (165MB)
+    - 위 모델들의 sideright 뷰
+  - ✅ `h36m_3d_world2cam2img_backright_floorXZZplus_30f_or_longer.npz` (56MB)
+  - ✅ `h36m_3d_world2cam2img_sideright_floorXZZplus_30f_or_longer.npz` (56MB)
   - 저장 위치: `~/carepd/CARE-PD/assets/datasets/h36m/BMCLab/`
-- [ ] 3DGait: 전처리 스크립트 버그 (UnboundLocalError)
+
+- [x] **3DGait 부분 전처리 완료**
+  - world, sideright 뷰 사용 가능
+
 - [ ] PD-GaM: 미실행
 - [ ] T-SDU-PD: 미실행
 
@@ -165,33 +178,47 @@ CARE-PD/
 
 ## 📝 다음 작업 계획
 
-### 우선순위 1: POTR 23-Fold LOSO 학습 (GPU 1 사용)
-- [ ] **POTR + BMCLab 23-fold** - 전체 환자 LOSO CV
-  - 현재 2-fold에서 Class 2 (중증) 성능 매우 낮음 (F1: 0.03)
-  - 23-fold로 환자별 일반화 성능 확인 필요
-  - 예상 시간: ~10-15분
-  - 명령어: `CUDA_VISIBLE_DEVICES=1 nohup python run.py --backbone potr --config BMCLab.json --num_folds 23 --hypertune 0 --this_run_num 0 > train_potr_23fold.log 2>&1 &`
+### 우선순위 1: H36M_backright 모델 학습 (GPU 1 사용) ✅ 데이터 준비 완료
 
-### 우선순위 2: 나머지 경량 모델 학습 (GPU 1 사용)
-- [ ] **MotionCLIP** (8M params) + BMCLab 2-fold
-- [ ] **PoseFormerV2** (8M params) + BMCLab 2-fold
-- [ ] **MixSTE** (10M params) + BMCLab 2-fold
-- [ ] **MoMask (RVQVAE)** (10M params) + BMCLab 2-fold
+**경량 모델 (빠른 학습):**
+- [ ] **PoseFormerV2** (8M params) + BMCLab_backright
+  - 예상 시간: ~10-15분 (23-fold)
+  - 명령어: `CUDA_VISIBLE_DEVICES=1 nohup python run.py --backbone poseformerv2 --config BMCLab_backright.json --num_folds 2 --hypertune 1 --ntrials 3 --this_run_num 0 > poseformerv2_hypertune.log 2>&1 &`
 
-### 우선순위 3: 추가 데이터셋 전처리
-- [ ] 3DGait 전처리 버그 수정
-- [ ] PD-GaM 전처리
-- [ ] T-SDU-PD 전처리
+**중간 모델:**
+- [ ] **MixSTE** (10M params) + BMCLab_backright
+  - 예상 시간: ~15-20분
+- [ ] **MotionAGFormer** (15M params) + BMCLab_backright
+  - 예상 시간: ~20-25분
+
+**대형 모델 (최고 성능 기대):**
+- [ ] **MotionBERT** (25M params) + BMCLab_backright
+  - Dual-Stream Transformer (POTR의 7.5배)
+  - 예상 시간: ~30-40분
+  - ⚠️ GPU 메모리 11GB+ 필요 → batch_size 조정 가능
+
+### 우선순위 2: 추가 데이터 형식 전처리 (선택)
+- [ ] **6D_SMPL 전처리** (MotionCLIP용)
+  - 명령어: `bash scripts/preprocess_smpl2sixD.sh`
+  - 소요 시간: ~5-10분
+- [ ] **HumanML3D 전처리** (MoMask용)
+  - 명령어: `bash scripts/preprocess_smpl2humanml3d.sh`
+  - 소요 시간: ~10-15분
+
+### 우선순위 3: Two-View 앙상블 실험
+- [ ] Backright + Sideright 뷰 결합
+- [ ] 앙상블 성능 평가
+
+### 우선순위 4: POTR 성능 개선 실험
+- [ ] Epoch 수 증가 (3 → 10, 30)
+- [ ] Focal Loss gamma 조정 (2 → 3, 4)
+- [ ] Class weights 튜닝
+
+### 우선순위 5: 추가 데이터셋
+- [ ] 3DGait 학습 (world, sideright 뷰 존재)
+- [ ] PD-GaM 전처리 및 학습
+- [ ] T-SDU-PD 전처리 및 학습
 - [ ] 전체 코호트 통합 (186명 환자)
-
-### 우선순위 4: 중량 모델 학습 (GPU 0 사용 가능 시)
-- [ ] **MotionBERT** (25M params) - GPU 0 필요 (11GB+ 메모리)
-- [ ] **MotionAGFormer** (15M params)
-
-### 우선순위 5: 성능 개선 실험
-- [ ] Class imbalance 해결: SMOTE, focal loss 튜닝
-- [ ] Epoch 수 증가 실험 (3 → 10, 30)
-- [ ] 앙상블 모델 실험
 
 ---
 
