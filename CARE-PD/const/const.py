@@ -2,7 +2,9 @@ import torch
 
 
 _DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-SUPPORTED_DATASETS = ['BMCLab', 'T-SDU-PD', 'PD-GaM', '3DGait', 'DNE', 'E-LC', 'KUL-DT-T', 'T-LTC', 'T-SDU'] 
+SUPPORTED_DATASETS = ['BMCLab', 'T-SDU-PD', 'PD-GaM', '3DGait', 'DNE', 'E-LC', 'KUL-DT-T', 'T-LTC', 'T-SDU', 'merged']
+# Datasets with UPDRS gait labels (for LODO evaluation)
+LODO_DATASETS = ['BMCLab', 'T-SDU-PD', 'PD-GaM', '3DGait'] 
 DATASET_FOR_TUNING = {'classifier_only': 'BMCLab', 'end2end': 'PD-GaM'}
 SUPPORTED_VIEWS = ['backright', 'side_right']
 DATA_TYPES_SUPPORTING_RUNTIME_TRANSFORMS = ['h36m']
@@ -20,12 +22,14 @@ NUM_OF_PATIENTS_PER_DATASET = {
     'E-LC': 59,
     'T-LTC': 14,
     'T-SDU': 53,
+    'merged': 67,
 }
 NUM_CLASSES_PER_DATASET = {
     'BMCLab': 3,
     'T-SDU-PD': 3,
     'PD-GaM': 4,
-    '3DGait': 4
+    '3DGait': 4,
+    'merged': 4,
 }
 
 DATASET_FPS = {
@@ -38,6 +42,7 @@ DATASET_FPS = {
     'E-LC': 30,
     'T-LTC': 30,
     'T-SDU': 30,
+    'merged': 30,
 }
 
 DATASET_ORIGINAL_FPS = {
@@ -50,6 +55,7 @@ DATASET_ORIGINAL_FPS = {
     'E-LC': 120,
     'T-LTC': 30,
     'T-SDU': 30,
+    'merged': 30,
 }
 
 BACKBONE_POSETYPE_MAPPER = {

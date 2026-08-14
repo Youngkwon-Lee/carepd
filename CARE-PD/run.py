@@ -304,12 +304,12 @@ def get_train_and_eval_datasets_depending_on_LODO(params, backbone_name, fold, a
             if params['AID'] and augmented_datasets:
                 nn_params = params.copy()
                 nn_params['num_folds'] = 6
-                other_datasets = [d for d in const.SUPPORTED_DATASETS if d != params['dataset']]
+                other_datasets = [d for d in const.LODO_DATASETS if d != params['dataset']]
                 other_datasets = [dataset_factory(override_dataset(nn_params, d), backbone_name, fold) for d in other_datasets]
                 train_dataset = torch.utils.data.ConcatDataset([x[0] for x in other_datasets])
                 eval_dataset  = torch.utils.data.ConcatDataset([x[1] for x in other_datasets])
             else:
-                other_datasets = [d for d in const.SUPPORTED_DATASETS if d != params['dataset']]
+                other_datasets = [d for d in const.LODO_DATASETS if d != params['dataset']]
                 other_datasets = [dataset_factory(override_dataset(params, d), backbone_name, fold) for d in other_datasets]
                 train_dataset = torch.utils.data.ConcatDataset([x[0] for x in other_datasets])
                 eval_dataset  = torch.utils.data.ConcatDataset([x[1] for x in other_datasets])

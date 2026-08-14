@@ -21,6 +21,7 @@ from data.bmclab_datareader import BMCLabReader
 from data.tsdupd_datareader import TSDUPD_Reader
 from data.pdgam_datareader import PDGaMReader
 from data.threedgait_datareader import GAIT3DReader
+from data.merged_datareader import MergedReader
 from data.augmentations import MirrorReflection, RandomRotation, RandomNoise, axis_mask
 from learning.utils import compute_class_weights
 from const.path import PROJECT_ROOT
@@ -868,6 +869,11 @@ def dataset_factory(params, backbone, fold):
             'h36m': GAIT3DReader,
             'humanML3D': GAIT3DReader,
             '6DSMPL': GAIT3DReader
+        },
+        'merged': {
+            'h36m': MergedReader,
+            'h36m_backright': MergedReader,
+            'h36m_sideright': MergedReader
         }
     }
 

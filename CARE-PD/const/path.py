@@ -280,6 +280,23 @@ POSE_AND_LABEL = {
             'PATH_LABELS': f'{PROJECT_ROOT}/assets/datasets/T-LDU.pkl'
         }
     },
+
+    'merged': {
+        'h36m': {
+            'PATH_POSES': {
+                '2D': {
+                    'backright': f'{PROJECT_ROOT}/assets/datasets/h36m/merged/CARE-PD_merged_backright.npz',
+                    'side_right': f'{PROJECT_ROOT}/assets/datasets/h36m/merged/CARE-PD_merged_sideright.npz',
+                },
+                '3D': {
+                    'preprocessed': f'{PROJECT_ROOT}/assets/datasets/h36m/merged/CARE-PD_merged_3d_preprocessed.npz',
+                    'camera_backright': f'{PROJECT_ROOT}/assets/datasets/h36m/merged/CARE-PD_merged_backright.npz',
+                    'camera_side_right': f'{PROJECT_ROOT}/assets/datasets/h36m/merged/CARE-PD_merged_sideright.npz',
+                }
+            },
+            'PATH_LABELS': f'{PROJECT_ROOT}/assets/datasets'
+        }
+    },
 }
 
 PRETRAINEDD_MODEL_CHECKPOINTS_ROOT_PATH = f'{PROJECT_ROOT}/assets/Pretrained_checkpoints'

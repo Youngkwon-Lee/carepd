@@ -259,9 +259,10 @@ def remove_out_of_bounds(W, H, walk, h36m_joints_img):
             # print("All frames are fully in-bounds")
             flag = True
     else:
-        # raise ValueError(f"⚠️ {walk} has no in-bounds frames")
-        a = 1
-        
+        # No in-bounds frames at all
+        h36m_joints_img_inbounds = h36m_joints_img
+        flag = False
+
     return h36m_joints_img_inbounds, flag
 
                 
